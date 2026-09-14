@@ -36,7 +36,7 @@ defineEmits(['open-cart'])
 .header__inner {
   max-width: 1120px;
   margin: 0 auto;
-  padding: 14px 24px;
+  padding: 12px 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -44,7 +44,7 @@ defineEmits(['open-cart'])
 }
 
 .header__logo {
-  height: 40px;
+  height: 60px;
   width: auto;
 }
 
