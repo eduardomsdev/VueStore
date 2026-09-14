@@ -7,7 +7,7 @@ defineProps({
     required: true
   }
 })
-defineEmits(['view-details'])
+defineEmits(['view-details', 'add-to-cart'])
 </script>
 
 <template>
@@ -24,6 +24,7 @@ defineEmits(['view-details'])
         :key="product.id"
         :product="product"
         @view-details="$emit('view-details', $event)"
+        @add-to-cart="$emit('add-to-cart', $event)"
       />
     </div>
   </div>

@@ -1,16 +1,13 @@
 <script setup>
+import { formatPrice } from '../utils/format.js'
+
 defineProps({
   product: {
     type: Object,
     required: true
   }
 })
-defineEmits(['view-details'])
-
-// Formata o preço no padrão monetário brasileiro.
-function formatPrice(value) {
-  return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-}
+defineEmits(['view-details', 'add-to-cart'])
 </script>
 
 <template>
@@ -20,9 +17,19 @@ function formatPrice(value) {
       <span class="product-card__category">{{ product.category }}</span>
       <h3 class="product-card__name">{{ product.name }}</h3>
       <p class="product-card__price">{{ formatPrice(product.price) }}</p>
-      <button class="product-card__btn" @click="$emit('view-details', product)">
-        Ver detalhes
-      </button>
+
+      <div class="product-card__actions">
+        <button class="product-card__btn" @click="$emit('view-details', product)">
+          Ver detalhes
+        </button>
+        <button
+          class="product-card__btn product-card__btn--icon"
+          title="Adicionar ao carrinho"
+          @click="$emit('add-to-cart', product)"
+        >
+          +
+        </button>
+      </div>
     </div>
   </article>
 </template>
@@ -71,6 +78,11 @@ function formatPrice(value) {
   margin: 6px 0 12px;
 }
 
+.product-card__actions {
+  display: flex;
+  gap: 8px;
+}
+
 .product-card__btn {
   padding: 10px;
   border-radius: var(--radius-sm);
@@ -79,9 +91,16 @@ function formatPrice(value) {
   font-size: 13px;
   font-weight: 600;
   transition: background 0.15s ease;
+  flex: 1;
 }
 
 .product-card__btn:hover {
   background: var(--color-primary-dark);
+}
+
+.product-card__btn--icon {
+  flex: 0 0 40px;
+  font-size: 18px;
+  line-height: 1;
 }
 </style>

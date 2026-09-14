@@ -1,15 +1,13 @@
 <script setup>
+import { formatPrice } from '../utils/format.js'
+
 defineProps({
   product: {
     type: Object,
     required: true
   }
 })
-defineEmits(['close'])
-
-function formatPrice(value) {
-  return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-}
+defineEmits(['close', 'add-to-cart'])
 </script>
 
 <template>
@@ -22,6 +20,9 @@ function formatPrice(value) {
       <h2 class="modal__name">{{ product.name }}</h2>
       <p class="modal__price">{{ formatPrice(product.price) }}</p>
       <p class="modal__description">{{ product.description }}</p>
+      <button class="modal__btn" @click="$emit('add-to-cart', product)">
+        Adicionar ao carrinho
+      </button>
     </div>
   </div>
 </template>
@@ -99,6 +100,21 @@ function formatPrice(value) {
   font-size: 14px;
   line-height: 1.6;
   color: var(--color-text-secondary);
-  margin: 0;
+  margin: 0 0 18px;
+}
+
+.modal__btn {
+  width: 100%;
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  background: var(--color-primary);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  transition: background 0.15s ease;
+}
+
+.modal__btn:hover {
+  background: var(--color-primary-dark);
 }
 </style>
