@@ -25,6 +25,8 @@ const cardExpiry = ref('')
 const cardCvv = ref('')
 
 const orderConfirmed = ref(false)
+const isSubmitting = ref(false)
+const submitError = ref(null)
 
 // Formulário só é considerado válido com os campos essenciais preenchidos.
 const isFormValid = computed(() => {
@@ -35,10 +37,33 @@ const isFormValid = computed(() => {
   return hasDeliveryInfo && hasPaymentInfo
 })
 
-function confirmOrder() {
+// Exemplo de comunicação com API (POST): envia o pedido para uma API de teste
+// antes de exibir a confirmação. Não há backend próprio no projeto.
+async function confirmOrder() {
   if (!isFormValid.value) return
-  // Não há backend: apenas simula a confirmação do pedido na tela.
-  orderConfirmed.value = true
+
+  isSubmitting.value = true
+  submitError.value = null
+
+  try {
+    const response = await fetch('https://jsonplaceholder.typicode.com/posts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        customer: { fullName: fullName.value, address: address.value, city: city.value },
+        paymentMethod: paymentMethod.value,
+        items: props.items,
+        total: props.total
+      })
+    })
+    if (!response.ok) throw new Error('Falha ao enviar o pedido')
+
+    orderConfirmed.value = true
+  } catch (error) {
+    submitError.value = 'Não foi possível confirmar o pedido agora. Tente novamente.'
+  } finally {
+    isSubmitting.value = false
+  }
 }
 </script>
 
@@ -127,8 +152,9 @@ function confirmOrder() {
             <span>Total</span>
             <strong>{{ formatPrice(total) }}</strong>
           </div>
-          <button class="checkout__btn" :disabled="!isFormValid" @click="confirmOrder">
-            Confirmar pedido
+          <p v-if="submitError" class="checkout__submit-error">{{ submitError }}</p>
+          <button class="checkout__btn" :disabled="!isFormValid || isSubmitting" @click="confirmOrder">
+            {{ isSubmitting ? 'Enviando pedido...' : 'Confirmar pedido' }}
           </button>
         </aside>
       </div>
@@ -261,6 +287,12 @@ function confirmOrder() {
 
 .checkout__summary-total strong {
   font-size: 18px;
+}
+
+.checkout__submit-error {
+  font-size: 13px;
+  color: #d63c3c;
+  margin-bottom: 10px;
 }
 
 .checkout__btn {

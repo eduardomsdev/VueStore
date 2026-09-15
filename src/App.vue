@@ -1,13 +1,13 @@
 <script setup>
 import { ref, computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import Header from './components/Header.vue'
-import SearchBar from './components/SearchBar.vue'
-import CategoryFilter from './components/CategoryFilter.vue'
-import ProductList from './components/ProductList.vue'
 import ProductModal from './components/ProductModal.vue'
 import CartDrawer from './components/CartDrawer.vue'
-import CheckoutPage from './components/CheckoutPage.vue'
 import { products } from './data/products.js'
+
+const route = useRoute()
+const router = useRouter()
 
 const categories = ['Todos', 'Eletrônicos', 'Computadores', 'Acessórios', 'Smartphones']
 
@@ -16,10 +16,9 @@ const searchQuery = ref('')
 const selectedCategory = ref('Todos')
 const selectedProduct = ref(null)
 
-// Estado do carrinho e da navegação (loja ou checkout).
+// Estado do carrinho. A navegação entre loja e checkout agora é feita pelo vue-router.
 const cart = ref([])
 const isCartOpen = ref(false)
-const currentView = ref('store') // 'store' | 'checkout'
 
 // Computed property: recalcula a lista exibida sempre que a busca
 // ou a categoria selecionada mudam.
@@ -37,6 +36,19 @@ const filteredProducts = computed(() => {
 // Computed properties do carrinho: quantidade total e valor total.
 const cartCount = computed(() => cart.value.reduce((sum, item) => sum + item.quantity, 0))
 const cartTotal = computed(() => cart.value.reduce((sum, item) => sum + item.price * item.quantity, 0))
+
+// Props repassadas para a view atual (Home ou Checkout) via <router-view>.
+const viewProps = computed(() => {
+  if (route.name === 'checkout') {
+    return { items: cart.value, total: cartTotal.value }
+  }
+  return {
+    categories,
+    selectedCategory: selectedCategory.value,
+    searchQuery: searchQuery.value,
+    filteredProducts: filteredProducts.value
+  }
+})
 
 function openDetails(product) {
   selectedProduct.value = product
@@ -76,12 +88,11 @@ function removeFromCart(item) {
 
 function goToCheckout() {
   isCartOpen.value = false
-  currentView.value = 'checkout'
+  router.push({ name: 'checkout' })
 }
 
 function finishOrder() {
   cart.value = []
-  currentView.value = 'store'
 }
 </script>
 
@@ -89,31 +100,18 @@ function finishOrder() {
   <div class="app">
     <Header :cart-count="cartCount" @open-cart="isCartOpen = true" />
 
-    <!-- v-if alterna entre a loja e a página de checkout -->
-    <main v-if="currentView === 'store'" class="app__main">
-      <div class="app__controls">
-        <SearchBar v-model="searchQuery" />
-        <CategoryFilter
-          :categories="categories"
-          :selected="selectedCategory"
-          @select="selectedCategory = $event"
-        />
-      </div>
-
-      <ProductList
-        :products="filteredProducts"
+    <!-- router-view alterna entre a loja (/) e o checkout (/checkout) -->
+    <RouterView v-slot="{ Component }">
+      <component
+        :is="Component"
+        v-bind="viewProps"
+        @update:search-query="searchQuery = $event"
+        @select-category="selectedCategory = $event"
         @view-details="openDetails"
         @add-to-cart="addToCart"
+        @finish="finishOrder"
       />
-    </main>
-
-    <CheckoutPage
-      v-else
-      :items="cart"
-      :total="cartTotal"
-      @back="currentView = 'store'"
-      @finish="finishOrder"
-    />
+    </RouterView>
 
     <ProductModal
       v-if="selectedProduct"
